@@ -30,6 +30,15 @@ func sign(w http.ResponseWriter, r *http.Request) {
 
 	if u := user.Current(c); u != nil {
 		g.Author = u.String()
+	} else {
+		url, err := user.LoginURL(c, r.URL.String())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Location", url)
+		w.WriteHeader(http.StatusFound)
+		return
 	}
 
 	key := datastore.NewIncompleteKey(c, "Greeting", guestbookKey(c))
